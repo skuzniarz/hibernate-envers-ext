@@ -1,4 +1,4 @@
-package org.mcp.hibernate.envers.query.impl;
+package org.mcp.hibernate.envers.query.internal.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.envers.RevisionType;
-import org.hibernate.envers.configuration.AuditConfiguration;
-import org.hibernate.envers.configuration.AuditEntitiesConfiguration;
+import org.hibernate.envers.configuration.internal.AuditEntitiesConfiguration;
+import org.hibernate.envers.configuration.spi.AuditConfiguration;
 import org.hibernate.envers.exception.AuditException;
+import org.hibernate.envers.internal.reader.AuditReaderImplementor;
 import org.hibernate.envers.query.criteria.AuditCriterion;
-import org.hibernate.envers.query.impl.RevisionsOfEntityQuery;
-import org.hibernate.envers.reader.AuditReaderImplementor;
+import org.hibernate.envers.query.internal.impl.RevisionsOfEntityQuery;
 import org.hibernate.proxy.HibernateProxy;
 
 /**

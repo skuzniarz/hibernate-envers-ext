@@ -5,12 +5,12 @@ import javax.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.event.EnversListener;
+import org.hibernate.envers.event.spi.EnversListener;
 import org.hibernate.envers.exception.AuditException;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PostInsertEventListener;
-import org.mcp.hibernate.envers.reader.ExtAuditReaderImpl;
+import org.mcp.hibernate.envers.internal.reader.ExtAuditReaderImpl;
 
 /**
  * <p>
@@ -40,11 +40,12 @@ public class ExtAuditReaderFactory {
 				.getServiceRegistry()
 				.getService( EventListenerRegistry.class );
 
-		for ( PostInsertEventListener listener : listenerRegistry.getEventListenerGroup( EventType.POST_INSERT ).listeners() ) {
+		for ( PostInsertEventListener listener : listenerRegistry.getEventListenerGroup( EventType.POST_INSERT )
+				.listeners() ) {
 			if ( listener instanceof EnversListener ) {
 				// todo : slightly different from original code in that I am not checking the other listener groups...
 				return new ExtAuditReaderImpl(
-						( (EnversListener) listener ).getAuditConfiguration(),
+						((EnversListener) listener).getAuditConfiguration(),
 						session,
 						sessionImpl
 				);

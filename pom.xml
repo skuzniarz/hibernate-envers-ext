@@ -10,13 +10,13 @@
 
 	<groupId>org.mcp.hibernate</groupId>	
 	<artifactId>hibernate-envers-ext</artifactId>
-	<version>4.2.8-SNAPSHOT</version>
+	<version>4.3.1-SNAPSHOT</version>
 	
 	<dependencies>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-envers</artifactId>
-			<version>4.2.8.Final</version>
+			<version>4.3.1.Final</version>
 		</dependency>
 	</dependencies>
 	

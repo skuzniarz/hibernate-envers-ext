@@ -1,13 +1,13 @@
 package org.mcp.hibernate.envers.query;
 
-import static org.hibernate.envers.tools.Tools.getTargetClassIfProxied;
+import static org.hibernate.envers.internal.tools.EntityTools.getTargetClassIfProxied;
 
 import org.hibernate.envers.RevisionType;
-import org.hibernate.envers.configuration.AuditConfiguration;
+import org.hibernate.envers.configuration.spi.AuditConfiguration;
+import org.hibernate.envers.internal.reader.AuditReaderImplementor;
 import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.envers.query.AuditQueryCreator;
-import org.hibernate.envers.reader.AuditReaderImplementor;
-import org.mcp.hibernate.envers.query.impl.ExtRevisionsOfEntityQuery;
+import org.mcp.hibernate.envers.query.internal.impl.ExtRevisionsOfEntityQuery;
 
 /**
  * <p>

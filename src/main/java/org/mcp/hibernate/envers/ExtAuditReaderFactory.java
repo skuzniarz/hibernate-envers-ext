@@ -15,7 +15,8 @@ public class ExtAuditReaderFactory {
     public static ExtAuditReader get(Session session) throws AuditException {
         SessionImplementor sessionImpl;
 		if (!(session instanceof SessionImplementor)) {
-			sessionImpl = (SessionImplementor) session.getSessionFactory().getCurrentSession();
+			sessionImpl = (SessionImplementor) session.getSessionFactory()
+					.getCurrentSession();
 		} else {
 			sessionImpl = (SessionImplementor) session;
 		}
@@ -25,7 +26,8 @@ public class ExtAuditReaderFactory {
 				.getServiceRegistry()
 				.getService( EventListenerRegistry.class );
 
-		for ( PostInsertEventListener listener : listenerRegistry.getEventListenerGroup( EventType.POST_INSERT ).listeners() ) {
+		for ( PostInsertEventListener listener : listenerRegistry
+				.getEventListenerGroup( EventType.POST_INSERT ).listeners() ) {
 			if ( listener instanceof EnversListener ) {
 				return new ExtAuditReaderImpl(
 						((EnversListener) listener).getAuditConfiguration(),

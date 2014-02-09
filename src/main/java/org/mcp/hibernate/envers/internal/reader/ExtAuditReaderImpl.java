@@ -10,7 +10,9 @@ import org.mcp.hibernate.envers.query.ExtAuditQueryCreator;
 public class ExtAuditReaderImpl extends AuditReaderImpl implements ExtAuditReader {
 	protected AuditConfiguration auditConfiguration;
 	
-	public ExtAuditReaderImpl(AuditConfiguration verCfg, Session session, SessionImplementor sessionImplementor) {
+	public ExtAuditReaderImpl(AuditConfiguration verCfg, Session session,
+			SessionImplementor sessionImplementor) {
+		
 		super(verCfg, session, sessionImplementor);
 		this.auditConfiguration = verCfg;
 	}

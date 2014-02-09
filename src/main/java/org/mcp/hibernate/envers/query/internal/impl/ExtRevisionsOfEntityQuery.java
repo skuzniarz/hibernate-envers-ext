@@ -15,47 +15,60 @@ import org.hibernate.envers.query.criteria.AuditCriterion;
 import org.hibernate.envers.query.internal.impl.RevisionsOfEntityQuery;
 import org.hibernate.proxy.HibernateProxy;
 
-/**
- * <p>
- * </p>
- * 
- * @author Szczepan Kuzniarz
- */
 public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	protected boolean selectDeletedEntities;
 	
-	public ExtRevisionsOfEntityQuery(AuditConfiguration verCfg, AuditReaderImplementor versionsReader, Class<?> cls, boolean selectDeletedEntities) {
-		super(verCfg, versionsReader, cls, false, selectDeletedEntities);
+	public ExtRevisionsOfEntityQuery(AuditConfiguration verCfg,
+			AuditReaderImplementor versionsReader, Class<?> cls,
+			boolean selectDeletedEntities) {
+		
+		super( verCfg, versionsReader, cls, false, selectDeletedEntities );
 		this.selectDeletedEntities = selectDeletedEntities;
 	}
 
     public List<Object> list() throws AuditException {
         AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
 
-        if (!selectDeletedEntities) {
-            qb.getRootParameters().addWhereWithParam(verEntCfg.getRevisionTypePropName(), "<>", RevisionType.DEL);
+        if ( !selectDeletedEntities) {
+            qb.getRootParameters().addWhereWithParam(
+            		verEntCfg.getRevisionTypePropName(),
+            		"<>",
+            		RevisionType.DEL
+            );
         }
 
-        for (AuditCriterion criterion : criterions) {
-            criterion.addToQuery(verCfg, versionsReader, entityName, qb, qb.getRootParameters());
+        for ( AuditCriterion criterion : criterions ) {
+            criterion.addToQuery(
+            		verCfg,
+            		versionsReader,
+            		entityName,
+            		qb,
+            		qb.getRootParameters()
+            );
         }
 
-        if (!hasProjection && !hasOrder) {
+        if ( !hasProjection && !hasOrder ) {
             String revisionPropertyPath = verEntCfg.getRevisionNumberPath();
-            qb.addOrder(revisionPropertyPath, true);
+            qb.addOrder( revisionPropertyPath, true );
         }
 
-        qb.addFrom(verCfg.getAuditEntCfg().getRevisionInfoEntityName(), "r");
-        qb.getRootParameters().addWhere(verCfg.getAuditEntCfg().getRevisionNumberPath(), true, "=", "r.id", false);
+        qb.addFrom( verCfg.getAuditEntCfg().getRevisionInfoEntityName(), "r" );
+        qb.getRootParameters().addWhere(
+        		verCfg.getAuditEntCfg().getRevisionNumberPath(),
+        		true,
+        		"=",
+        		"r.id",
+        		false
+        );
 
-		List<Object> queryResult = buildAndExecuteQuery();
-        if (hasProjection) {
+        List<Object> queryResult = buildAndExecuteQuery();
+        if ( hasProjection ) {
             return queryResult;
         } else {
             List<Object> entities = new ArrayList<Object>();
             String revisionTypePropertyName = verEntCfg.getRevisionTypePropName();
 
-            for (Object resultRow : queryResult) {
+            for ( Object resultRow : queryResult ) {
 				Map versionsEntity;
                 Object revisionData;
 
@@ -65,12 +78,16 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 
                 Number revision = getRevisionNumber(versionsEntity);
                 
-                Object entity = entityInstantiator.createInstanceFromVersionsEntity(entityName, versionsEntity, revision);
-                RevisionType revisionType = (RevisionType) versionsEntity.get(revisionTypePropertyName);
+                Object entity = entityInstantiator.createInstanceFromVersionsEntity(
+                		entityName,
+                		versionsEntity,
+                		revision
+                );
+                RevisionType revisionType = (RevisionType) versionsEntity.get( revisionTypePropertyName );
                 if (revisionType == RevisionType.MOD) {
-                    entities.add(new Object[] { entity, revisionData, revisionType, getChangedProperties(versionsEntity) });                	
+                    entities.add(new Object[] {entity, revisionData, revisionType, getChangedProperties(versionsEntity)});                	
                 } else {
-                    entities.add(new Object[] { entity, revisionData, revisionType });
+                    entities.add(new Object[] {entity, revisionData, revisionType});
                 }
             }
 
@@ -78,31 +95,30 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
         }
     }
 	
-    @SuppressWarnings("rawtypes")
 	protected Number getRevisionNumber(Map versionsEntity) {
         AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
 
         String originalId = verEntCfg.getOriginalIdPropName();
         String revisionPropertyName = verEntCfg.getRevisionFieldName();
 
-        Object revisionInfoObject = ((Map) versionsEntity.get(originalId)).get(revisionPropertyName);
+        Object revisionInfoObject = ( (Map) versionsEntity.get(originalId)).get(revisionPropertyName );
 
-        if (revisionInfoObject instanceof HibernateProxy) {
+        if ( revisionInfoObject instanceof HibernateProxy ) {
             return (Number) ((HibernateProxy) revisionInfoObject).getHibernateLazyInitializer().getIdentifier();
         } else {
-            return verCfg.getRevisionInfoNumberReader().getRevisionNumber(revisionInfoObject);   
+            return verCfg.getRevisionInfoNumberReader().getRevisionNumber( revisionInfoObject );   
         }
     }
     
     protected Set<String> getChangedProperties(Map versionsEntity) {
     	Set<String> changedProperties = new HashSet<String>();
     	String modifiedFlagSuffix = verCfg.getGlobalCfg().getModifiedFlagSuffix();
-    	for (Object key : versionsEntity.keySet()) {
+    	for ( Object key : versionsEntity.keySet() ) {
     		String keyString = key.toString();
-    		if (keyString.endsWith(modifiedFlagSuffix)) {
+    		if ( keyString.endsWith( modifiedFlagSuffix ) ) {
     			Object value = versionsEntity.get(key);
-    			if ((value != null) && Boolean.parseBoolean(value.toString())) {
-    				changedProperties.add(keyString.substring(0, keyString.length() - modifiedFlagSuffix.length()));
+    			if ( (value != null) && Boolean.parseBoolean( value.toString() ) ) {
+    				changedProperties.add( keyString.substring( 0, keyString.length() - modifiedFlagSuffix.length() ) );
     			}
     		}
     	}

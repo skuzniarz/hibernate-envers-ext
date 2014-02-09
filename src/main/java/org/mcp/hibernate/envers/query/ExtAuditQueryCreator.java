@@ -13,14 +13,23 @@ public class ExtAuditQueryCreator extends AuditQueryCreator {
 	
 	protected AuditReaderImplementor auditReaderImplementor;
 	
-	public ExtAuditQueryCreator(AuditConfiguration auditCfg, AuditReaderImplementor auditReaderImplementor) {
+	public ExtAuditQueryCreator(AuditConfiguration auditCfg,
+			AuditReaderImplementor auditReaderImplementor) {
+		
 		super(auditCfg, auditReaderImplementor);
 		this.auditConfiguration = auditCfg;
 		this.auditReaderImplementor = auditReaderImplementor;
 	}
 	
-    public AuditQuery forRevisionsOfEntityAndChanges(Class<?> c, boolean selectDeletedEntities) {
-        c = getTargetClassIfProxied(c);
-        return new ExtRevisionsOfEntityQuery(auditConfiguration, auditReaderImplementor, c, selectDeletedEntities);
+    public AuditQuery forRevisionsOfEntityAndChanges(Class<?> c,
+    		boolean selectDeletedEntities) {
+        
+    	c = getTargetClassIfProxied(c);
+        return new ExtRevisionsOfEntityQuery(
+        		auditConfiguration,
+        		auditReaderImplementor,
+        		c,
+        		selectDeletedEntities
+        );
     }
 }

@@ -22,44 +22,20 @@ import org.hibernate.proxy.HibernateProxy;
  * @author Szczepan Kuzniarz
  */
 public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
-	/**
-	 * It is private in superclass...
-	 */
 	protected boolean selectDeletedEntities;
 	
-	/**
-	 * @see RevisionsOfEntityQuery#RevisionsOfEntityQuery(AuditConfiguration, AuditReaderImplementor, Class, boolean, boolean)
-	 */
 	public ExtRevisionsOfEntityQuery(AuditConfiguration verCfg, AuditReaderImplementor versionsReader, Class<?> cls, boolean selectDeletedEntities) {
 		super(verCfg, versionsReader, cls, false, selectDeletedEntities);
 		this.selectDeletedEntities = selectDeletedEntities;
 	}
 
-	/**
-	 * <p>
-	 * Very similar to {@link RevisionsOfEntityQuery#list()}, but returns always a list of Object[] and
-	 * when the revision type is MOD fourth element of Object array. 
-	 * </p>
-	 */
-	@SuppressWarnings("rawtypes")
-	@Override
     public List<Object> list() throws AuditException {
         AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
 
-        /*
-        The query that should be executed in the versions table:
-        SELECT e (unless another projection is specified) FROM ent_ver e, rev_entity r WHERE
-          e.revision_type != DEL (if selectDeletedEntities == false) AND
-          e.revision = r.revision AND
-          (all specified conditions, transformed, on the "e" entity)
-          ORDER BY e.revision ASC (unless another order or projection is specified)
-         */      
         if (!selectDeletedEntities) {
-            // e.revision_type != DEL AND
             qb.getRootParameters().addWhereWithParam(verEntCfg.getRevisionTypePropName(), "<>", RevisionType.DEL);
         }
 
-        // all specified conditions, transformed
         for (AuditCriterion criterion : criterions) {
             criterion.addToQuery(verCfg, versionsReader, entityName, qb, qb.getRootParameters());
         }
@@ -72,7 +48,6 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
         qb.addFrom(verCfg.getAuditEntCfg().getRevisionInfoEntityName(), "r");
         qb.getRootParameters().addWhere(verCfg.getAuditEntCfg().getRevisionNumberPath(), true, "=", "r.id", false);
 
-        @SuppressWarnings("unchecked")
 		List<Object> queryResult = buildAndExecuteQuery();
         if (hasProjection) {
             return queryResult;
@@ -103,14 +78,6 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
         }
     }
 	
-	/**
-	 * <p>
-	 * Exact copy from superclass. We need this method in {@link #list()} above, but it is
-	 * private in {@link RevisionsOfEntityQuery}...
-	 * </p>
-	 * 
-	 * @see RevisionsOfEntityQuery#getRevisionNumber(Map)
-	 */
     @SuppressWarnings("rawtypes")
 	protected Number getRevisionNumber(Map versionsEntity) {
         AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
@@ -123,26 +90,14 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
         if (revisionInfoObject instanceof HibernateProxy) {
             return (Number) ((HibernateProxy) revisionInfoObject).getHibernateLazyInitializer().getIdentifier();
         } else {
-            // Not a proxy - must be read from cache or with a join
             return verCfg.getRevisionInfoNumberReader().getRevisionNumber(revisionInfoObject);   
         }
     }
     
-    /**
-     * <p>
-     * Scans the map created by this query execution and returns ale the properties
-     * with modification flag set to true.
-     * </p>
-     * 
-     * @param versionsEntity
-     * 
-     * @return
-     */
-    protected Set<String> getChangedProperties(@SuppressWarnings("rawtypes") Map versionsEntity) {
+    protected Set<String> getChangedProperties(Map versionsEntity) {
     	Set<String> changedProperties = new HashSet<String>();
     	String modifiedFlagSuffix = verCfg.getGlobalCfg().getModifiedFlagSuffix();
     	for (Object key : versionsEntity.keySet()) {
-    		// FIXME maybe all the keys are Strings and we can simply cast?
     		String keyString = key.toString();
     		if (keyString.endsWith(modifiedFlagSuffix)) {
     			Object value = versionsEntity.get(key);

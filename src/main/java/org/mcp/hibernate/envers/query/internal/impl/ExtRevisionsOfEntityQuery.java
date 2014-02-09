@@ -88,7 +88,8 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
                 );
                 if (revisionType == RevisionType.MOD) {
                     entities.add(new Object[] {
-                        entity, revisionData, revisionType, getChangedProperties(versionsEntity)
+                        entity, revisionData, revisionType,
+                        getChangedProperties(versionsEntity)
                     });                	
                 } else {
                     entities.add(new Object[] {

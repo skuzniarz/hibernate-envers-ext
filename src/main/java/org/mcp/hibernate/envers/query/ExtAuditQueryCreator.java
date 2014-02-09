@@ -9,27 +9,27 @@ import org.hibernate.envers.query.AuditQueryCreator;
 import org.mcp.hibernate.envers.query.internal.impl.ExtRevisionsOfEntityQuery;
 
 public class ExtAuditQueryCreator extends AuditQueryCreator {
-	protected AuditConfiguration auditConfiguration;
+    protected AuditConfiguration auditConfiguration;
 	
-	protected AuditReaderImplementor auditReaderImplementor;
+    protected AuditReaderImplementor auditReaderImplementor;
 	
-	public ExtAuditQueryCreator(AuditConfiguration auditCfg,
-			AuditReaderImplementor auditReaderImplementor) {
+    public ExtAuditQueryCreator(AuditConfiguration auditCfg,
+            AuditReaderImplementor auditReaderImplementor) {
 		
-		super(auditCfg, auditReaderImplementor);
-		this.auditConfiguration = auditCfg;
-		this.auditReaderImplementor = auditReaderImplementor;
+        super(auditCfg, auditReaderImplementor);
+        this.auditConfiguration = auditCfg;
+        this.auditReaderImplementor = auditReaderImplementor;
 	}
 	
     public AuditQuery forRevisionsOfEntityAndChanges(Class<?> c,
-    		boolean selectDeletedEntities) {
+            boolean selectDeletedEntities) {
         
-    	c = getTargetClassIfProxied(c);
+        c = getTargetClassIfProxied(c);
         return new ExtRevisionsOfEntityQuery(
-        		auditConfiguration,
-        		auditReaderImplementor,
-        		c,
-        		selectDeletedEntities
+            auditConfiguration,
+            auditReaderImplementor,
+            c,
+            selectDeletedEntities
         );
     }
 }

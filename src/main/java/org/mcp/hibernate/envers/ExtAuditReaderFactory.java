@@ -14,6 +14,7 @@ import org.mcp.hibernate.envers.internal.reader.ExtAuditReaderImpl;
 
 /**
  * <p>
+ * Factory for {@link ExtAuditReader} instances, works just like {@link AuditReaderFactory}.
  * </p>
  * 
  * @author Szczepan Kuzniarz
@@ -57,8 +58,7 @@ public class ExtAuditReaderFactory {
 
     /**
      * <p>
-     * Exact copy of {@link AuditReaderFactory#get(EntityManager)}, but it is impossible to inherit
-     * from {@link AuditReaderFactory}.
+     * Exact copy of {@link AuditReaderFactory#get(EntityManager)}.
      * </p>
      */
     public static ExtAuditReader get(EntityManager entityManager) throws AuditException {

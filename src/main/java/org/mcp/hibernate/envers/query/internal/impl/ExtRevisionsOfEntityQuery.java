@@ -17,13 +17,16 @@ import org.hibernate.proxy.HibernateProxy;
 
 /**
  * <p>
+ * Query similar to {@link RevisionsOfEntityQuery} but always returns list of arrays
+ * (as {@link RevisionsOfEntityQuery} with selectEntitiesOnly == false does), and
+ * for revisions of type {@link RevisionType#MOD} returns set of modified properties.
  * </p>
  * 
  * @author Szczepan Kuzniarz
  */
 public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	/**
-	 * It is private in superclass...
+	 * Private in superclass
 	 */
 	protected boolean selectDeletedEntities;
 	

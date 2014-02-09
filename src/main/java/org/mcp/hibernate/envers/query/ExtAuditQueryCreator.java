@@ -11,6 +11,8 @@ import org.mcp.hibernate.envers.query.internal.impl.ExtRevisionsOfEntityQuery;
 
 /**
  * <p>
+ * Extension of {@link AuditQueryCreator} adding method for creating {@link ExtRevisionsOfEntityQuery}
+ * instances.
  * </p>
  * 
  * @author Szczepan Kuzniarz

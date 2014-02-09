@@ -9,6 +9,7 @@ for (Object[] resultRow : resultList) {
         System.out.println(
             "atrybuty zmienione w rewizji " +
             ((DefaultRevisionEntity) resultRow[1]).getId() +
-            " to " +resultRow[3] );
+            " to " + resultRow[3]
+        );
     }
 }

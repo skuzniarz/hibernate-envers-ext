@@ -10,6 +10,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.boot.internal.EnversService;
 import org.hibernate.envers.configuration.internal.AuditEntitiesConfiguration;
 import org.hibernate.envers.exception.AuditException;
+import org.hibernate.envers.internal.entities.mapper.relation.query.QueryConstants;
 import org.hibernate.envers.internal.reader.AuditReaderImplementor;
 import org.hibernate.envers.query.criteria.AuditCriterion;
 import org.hibernate.envers.query.internal.impl.RevisionsOfEntityQuery;
@@ -41,59 +42,77 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	/**
 	 * <p>
 	 * Very similar to {@link RevisionsOfEntityQuery#list()}, but returns always a list of Object[] and
-	 * when the revision type is MOD fourth element of Object array. 
+	 * when the revision type is MOD fourth element of Object array is a set of changed properties. 
 	 * </p>
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
     public List<Object> list() throws AuditException {
-        AuditEntitiesConfiguration verEntCfg = enversService.getAuditEntitiesConfiguration();
+		AuditEntitiesConfiguration verEntCfg = enversService.getAuditEntitiesConfiguration();
 
         /*
-        The query that should be executed in the versions table:
+		The query that should be executed in the versions table:
         SELECT e (unless another projection is specified) FROM ent_ver e, rev_entity r WHERE
           e.revision_type != DEL (if selectDeletedEntities == false) AND
           e.revision = r.revision AND
           (all specified conditions, transformed, on the "e" entity)
           ORDER BY e.revision ASC (unless another order or projection is specified)
-         */      
-        if (!selectDeletedEntities) {
-            // e.revision_type != DEL AND
-            qb.getRootParameters().addWhereWithParam(verEntCfg.getRevisionTypePropName(), "<>", RevisionType.DEL);
-        }
+         */
+		if ( !selectDeletedEntities ) {
+			// e.revision_type != DEL AND
+			qb.getRootParameters().addWhereWithParam( verEntCfg.getRevisionTypePropName(), "<>", RevisionType.DEL );
+		}
 
-        // all specified conditions, transformed
-        for (AuditCriterion criterion : criterions) {
-            criterion.addToQuery(enversService, versionsReader, entityName, qb, qb.getRootParameters());
-        }
+		// all specified conditions, transformed
+		for ( AuditCriterion criterion : criterions ) {
+			criterion.addToQuery(
+					enversService,
+					versionsReader,
+					aliasToEntityNameMap,
+					QueryConstants.REFERENCED_ENTITY_ALIAS,
+					qb,
+					qb.getRootParameters()
+			);
+		}
 
-        if (!hasProjection && !hasOrder) {
+		if ( !hasProjection() && !hasOrder ) {
             String revisionPropertyPath = verEntCfg.getRevisionNumberPath();
-            qb.addOrder(revisionPropertyPath, true);
+			qb.addOrder( QueryConstants.REFERENCED_ENTITY_ALIAS, revisionPropertyPath, true );
         }
 
-        qb.addFrom(enversService.getAuditEntitiesConfiguration().getRevisionInfoEntityName(), "r");
-        qb.getRootParameters().addWhere(enversService.getAuditEntitiesConfiguration().getRevisionNumberPath(), true, "=", "r.id", false);
+		qb.addFrom( enversService.getAuditEntitiesConfiguration().getRevisionInfoEntityName(), "r", true );
+		qb.getRootParameters().addWhere(
+				enversService.getAuditEntitiesConfiguration().getRevisionNumberPath(),
+				true,
+				"=",
+				"r.id",
+				false
+		);
 
         @SuppressWarnings("unchecked")
 		List<Object> queryResult = buildAndExecuteQuery();
-        if (hasProjection) {
+		if ( hasProjection() ) {
             return queryResult;
         } else {
-            List<Object> entities = new ArrayList<Object>();
-            String revisionTypePropertyName = verEntCfg.getRevisionTypePropName();
+			List<Object> entities = new ArrayList<Object>();
+			String revisionTypePropertyName = verEntCfg.getRevisionTypePropName();
 
-            for (Object resultRow : queryResult) {
+			for ( Object resultRow : queryResult ) {
 				Map versionsEntity;
-                Object revisionData;
+				Object revisionData;
 
-                Object[] arrayResultRow = (Object[]) resultRow;
-                versionsEntity = (Map) arrayResultRow[0];
-                revisionData = arrayResultRow[1];
+				Object[] arrayResultRow = (Object[]) resultRow;
+				versionsEntity = (Map) arrayResultRow[0];
+				revisionData = arrayResultRow[1];
 
                 Number revision = getRevisionNumber(versionsEntity);
                 
-                Object entity = entityInstantiator.createInstanceFromVersionsEntity(entityName, versionsEntity, revision);
+				Object entity = entityInstantiator.createInstanceFromVersionsEntity(
+						entityName,
+						versionsEntity,
+						revision
+				);
+				
                 RevisionType revisionType = (RevisionType) versionsEntity.get(revisionTypePropertyName);
                 if (revisionType == RevisionType.MOD) {
                     entities.add(new Object[] { entity, revisionData, revisionType, getChangedProperties(versionsEntity) });                	

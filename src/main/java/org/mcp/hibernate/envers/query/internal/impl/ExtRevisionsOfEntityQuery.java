@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.envers.RevisionType;
+import org.hibernate.envers.boot.internal.EnversService;
 import org.hibernate.envers.configuration.internal.AuditEntitiesConfiguration;
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
 import org.hibernate.envers.exception.AuditException;
 import org.hibernate.envers.internal.reader.AuditReaderImplementor;
 import org.hibernate.envers.query.criteria.AuditCriterion;
@@ -33,8 +33,8 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	/**
 	 * @see RevisionsOfEntityQuery#RevisionsOfEntityQuery(AuditConfiguration, AuditReaderImplementor, Class, boolean, boolean)
 	 */
-	public ExtRevisionsOfEntityQuery(AuditConfiguration verCfg, AuditReaderImplementor versionsReader, Class<?> cls, boolean selectDeletedEntities) {
-		super(verCfg, versionsReader, cls, false, selectDeletedEntities);
+	public ExtRevisionsOfEntityQuery(EnversService enversService, AuditReaderImplementor versionsReader, Class<?> cls, boolean selectDeletedEntities) {
+		super(enversService, versionsReader, cls, false, selectDeletedEntities);
 		this.selectDeletedEntities = selectDeletedEntities;
 	}
 
@@ -47,7 +47,7 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	@SuppressWarnings("rawtypes")
 	@Override
     public List<Object> list() throws AuditException {
-        AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
+        AuditEntitiesConfiguration verEntCfg = enversService.getAuditEntitiesConfiguration();
 
         /*
         The query that should be executed in the versions table:
@@ -64,7 +64,7 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 
         // all specified conditions, transformed
         for (AuditCriterion criterion : criterions) {
-            criterion.addToQuery(verCfg, versionsReader, entityName, qb, qb.getRootParameters());
+            criterion.addToQuery(enversService, versionsReader, entityName, qb, qb.getRootParameters());
         }
 
         if (!hasProjection && !hasOrder) {
@@ -72,8 +72,8 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
             qb.addOrder(revisionPropertyPath, true);
         }
 
-        qb.addFrom(verCfg.getAuditEntCfg().getRevisionInfoEntityName(), "r");
-        qb.getRootParameters().addWhere(verCfg.getAuditEntCfg().getRevisionNumberPath(), true, "=", "r.id", false);
+        qb.addFrom(enversService.getAuditEntitiesConfiguration().getRevisionInfoEntityName(), "r");
+        qb.getRootParameters().addWhere(enversService.getAuditEntitiesConfiguration().getRevisionNumberPath(), true, "=", "r.id", false);
 
         @SuppressWarnings("unchecked")
 		List<Object> queryResult = buildAndExecuteQuery();
@@ -116,7 +116,7 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
 	 */
     @SuppressWarnings("rawtypes")
 	protected Number getRevisionNumber(Map versionsEntity) {
-        AuditEntitiesConfiguration verEntCfg = verCfg.getAuditEntCfg();
+        AuditEntitiesConfiguration verEntCfg = enversService.getAuditEntitiesConfiguration();
 
         String originalId = verEntCfg.getOriginalIdPropName();
         String revisionPropertyName = verEntCfg.getRevisionFieldName();
@@ -127,7 +127,7 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
             return (Number) ((HibernateProxy) revisionInfoObject).getHibernateLazyInitializer().getIdentifier();
         } else {
             // Not a proxy - must be read from cache or with a join
-            return verCfg.getRevisionInfoNumberReader().getRevisionNumber(revisionInfoObject);   
+            return enversService.getRevisionInfoNumberReader().getRevisionNumber(revisionInfoObject);   
         }
     }
     
@@ -143,7 +143,7 @@ public class ExtRevisionsOfEntityQuery extends RevisionsOfEntityQuery {
      */
     protected Set<String> getChangedProperties(@SuppressWarnings("rawtypes") Map versionsEntity) {
     	Set<String> changedProperties = new HashSet<String>();
-    	String modifiedFlagSuffix = verCfg.getGlobalCfg().getModifiedFlagSuffix();
+    	String modifiedFlagSuffix = enversService.getGlobalConfiguration().getModifiedFlagSuffix();
     	for (Object key : versionsEntity.keySet()) {
     		// FIXME maybe all the keys are Strings and we can simply cast?
     		String keyString = key.toString();

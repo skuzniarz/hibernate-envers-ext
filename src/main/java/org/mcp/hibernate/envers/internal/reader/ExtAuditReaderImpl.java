@@ -2,7 +2,7 @@ package org.mcp.hibernate.envers.internal.reader;
 
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
+import org.hibernate.envers.boot.internal.EnversService;
 import org.hibernate.envers.internal.reader.AuditReaderImpl;
 import org.hibernate.envers.query.AuditQueryCreator;
 import org.mcp.hibernate.envers.ExtAuditReader;
@@ -20,16 +20,16 @@ public class ExtAuditReaderImpl extends AuditReaderImpl implements ExtAuditReade
 	/**
 	 * Private in superclass, so we have to copy it
 	 * 
-	 * @see AuditReaderImpl#verCfg
+	 * @see AuditReaderImpl#enversService
 	 */
-	protected AuditConfiguration auditConfiguration;
+	protected EnversService enversService;
 	
 	/**
-	 * @see AuditReaderImpl#AuditReaderImpl(AuditConfiguration, Session, SessionImplementor)
+	 * @see AuditReaderImpl#AuditReaderImpl(EnversService, Session, SessionImplementor)
 	 */
-	public ExtAuditReaderImpl(AuditConfiguration verCfg, Session session, SessionImplementor sessionImplementor) {
-		super(verCfg, session, sessionImplementor);
-		this.auditConfiguration = verCfg;
+	public ExtAuditReaderImpl(EnversService enversService, Session session, SessionImplementor sessionImplementor) {
+		super(enversService, session, sessionImplementor);
+		this.enversService = enversService;
 	}
 
 	/**
@@ -37,6 +37,6 @@ public class ExtAuditReaderImpl extends AuditReaderImpl implements ExtAuditReade
 	 */
 	@Override
 	public ExtAuditQueryCreator createQuery() {
-		return new ExtAuditQueryCreator(auditConfiguration, this);
+		return new ExtAuditQueryCreator(enversService, this);
 	}
 }

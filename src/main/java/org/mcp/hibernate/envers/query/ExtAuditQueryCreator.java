@@ -3,7 +3,7 @@ package org.mcp.hibernate.envers.query;
 import static org.hibernate.envers.internal.tools.EntityTools.getTargetClassIfProxied;
 
 import org.hibernate.envers.RevisionType;
-import org.hibernate.envers.configuration.spi.AuditConfiguration;
+import org.hibernate.envers.boot.internal.EnversService;
 import org.hibernate.envers.internal.reader.AuditReaderImplementor;
 import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.envers.query.AuditQueryCreator;
@@ -21,9 +21,9 @@ public class ExtAuditQueryCreator extends AuditQueryCreator {
 	/**
 	 * Private in superclass
 	 * 
-	 * @see AuditQueryCreator#auditCfg
+	 * @see AuditQueryCreator#enversService
 	 */
-	protected AuditConfiguration auditConfiguration;
+	protected EnversService enversService;
 	
 	/**
 	 * Private in superclass
@@ -33,11 +33,11 @@ public class ExtAuditQueryCreator extends AuditQueryCreator {
 	protected AuditReaderImplementor auditReaderImplementor;
 	
 	/**
-	 * @see AuditQueryCreator#AuditQueryCreator(AuditConfiguration, AuditReaderImplementor)
+	 * @see AuditQueryCreator#AuditQueryCreator(EnversService, AuditReaderImplementor)
 	 */
-	public ExtAuditQueryCreator(AuditConfiguration auditCfg, AuditReaderImplementor auditReaderImplementor) {
-		super(auditCfg, auditReaderImplementor);
-		this.auditConfiguration = auditCfg;
+	public ExtAuditQueryCreator(EnversService enversService, AuditReaderImplementor auditReaderImplementor) {
+		super(enversService, auditReaderImplementor);
+		this.enversService = enversService;
 		this.auditReaderImplementor = auditReaderImplementor;
 	}
 	
@@ -62,6 +62,6 @@ public class ExtAuditQueryCreator extends AuditQueryCreator {
 	 */
     public AuditQuery forRevisionsOfEntityAndChanges(Class<?> c, boolean selectDeletedEntities) {
         c = getTargetClassIfProxied(c);
-        return new ExtRevisionsOfEntityQuery(auditConfiguration, auditReaderImplementor, c, selectDeletedEntities);
+        return new ExtRevisionsOfEntityQuery(enversService, auditReaderImplementor, c, selectDeletedEntities);
     }
 }
